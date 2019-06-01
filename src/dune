@@ -1,0 +1,4 @@
+(library
+  (public_name comm)
+  (name comm)
+  (libraries mpi))

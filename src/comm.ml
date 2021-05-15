@@ -25,7 +25,11 @@ module type T = sig
   (* broadcast a value to all the nodes, from root;
    the argument is not significant at any of the non-root nodes *)
   val broadcast : 'a -> 'a
-
+ 
+ (* broadcast a value to all the nodes, from root;
+    root should send [Some thing], non-root nodes should send [None] *)
+  val broadcastoption : 'a option -> 'a
+ 
   (** [root_receive x src]: the root node receives a value from [src] *)
   val root_receive : 'a -> int -> 'a
 
@@ -87,6 +91,7 @@ struct
 
 
   let broadcast x = x
+  let broadcastoption x = match x with Some z -> z | None -> assert false
   let root_receive x (_ : int) = x
   let send_to_root _ = ()
   let rank = 0
@@ -191,6 +196,9 @@ struct
 
 
   let broadcast x = Mpi.broadcast x 0 Mpi.comm_world
+  let broadcastoption x = match Mpi.broadcast x 0 Mpi.comm_world 
+    with Some z -> z | None -> assert false
+
   let root_receive _ src = Mpi.receive src 0 Mpi.comm_world
   let send_to_root x = Mpi.send x 0 0 Mpi.comm_world
 

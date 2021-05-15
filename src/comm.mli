@@ -25,7 +25,11 @@ module type T = sig
   (* broadcast a value to all the nodes, from root;
    the argument is not significant at any of the non-root nodes *)
   val broadcast : 'a -> 'a
-
+ 
+  (* broadcast a value to all the nodes, from root;
+    root should send [Some thing], non-root nodes should send [None] *)
+  val broadcastoption : 'a option -> 'a
+ 
   (** [root_receive x src]: the root node receives a value from [src] *)
   val root_receive : 'a -> int -> 'a
 

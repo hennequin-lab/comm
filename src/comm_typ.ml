@@ -4,10 +4,10 @@ module type T = sig
 
   (** wait until all nodes have called [barrier] *)
   val barrier : unit -> unit
- 
- (** scatter data from root node *)
+
+  (** scatter data from root node *)
   val scatter : 'a array -> 'a
- 
+
   (** gather data onto root node; non-root nodes receive [[| |]] *)
   val gather : 'a -> 'a array
 
@@ -24,6 +24,14 @@ module type T = sig
 
   (** same as gatheroption, except that the result is given to all nodes *)
   val allgatheroption : 'a option array -> 'a array
+
+  val reduce_sum_int : int -> int
+  val reduce_sum_float : float -> float
+
+  val reduce_sum_bigarray
+    :  ('a, 'b, 'c) Bigarray.Genarray.t
+    -> ('a, 'b, 'c) Bigarray.Genarray.t
+    -> unit
 
   (* broadcast a value to all the nodes, from root;
    the argument is not significant at any of the non-root nodes *)
@@ -62,4 +70,3 @@ module type T = sig
   (** same as print, with an EOL at the end *)
   val print_endline : string -> unit
 end
-

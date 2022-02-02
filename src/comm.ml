@@ -30,6 +30,9 @@ struct
       x
 
 
+  let reduce_sum_int x = x
+  let reduce_sum_float x = x
+  let reduce_sum_bigarray x dst = Bigarray.Genarray.blit x dst
   let broadcast x = x
   let broadcast' f = f ()
   let root_receive x (_ : int) = x
@@ -47,4 +50,3 @@ struct
   let print = Printf.printf "%s%!"
   let print_endline = Printf.printf "%s\n%!"
 end
-

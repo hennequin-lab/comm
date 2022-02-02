@@ -41,7 +41,7 @@ struct
   let root_perform f = if first then f () else ()
   let barrier () = Mpi.barrier Mpi.comm_world
   let scatter x = Mpi.scatter x 0 Mpi.comm_world
-   let gather x = Mpi.gather x 0 Mpi.comm_world
+  let gather x = Mpi.gather x 0 Mpi.comm_world
 
   let gatheroption x =
     let allx = gather x in
@@ -88,6 +88,9 @@ struct
         | None -> failwith "bad partitioning in allgatheroption")
 
 
+  let reduce_sum_int x = Mpi.reduce_int x Mpi.Int_sum 0 Mpi.comm_world
+  let reduce_sum_float x = Mpi.reduce_float x Mpi.Float_sum 0 Mpi.comm_world
+  let reduce_sum_bigarray x dst = Mpi.reduce_bigarray x dst Mpi.Sum 0 Mpi.comm_world
   let broadcast x = Mpi.broadcast x 0 Mpi.comm_world
 
   let broadcast' f =

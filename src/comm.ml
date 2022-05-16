@@ -103,6 +103,8 @@ struct
   let root_receive _ src = Mpi.receive src 0 Mpi.comm_world
   let send_to_root x = Mpi.send x 0 0 Mpi.comm_world
 
+  let init_rng = R.init_rng
+
   let self_init_rng () =
     Random.self_init ();
     let n = Mpi.comm_size Mpi.comm_world in

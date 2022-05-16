@@ -54,9 +54,13 @@ module type T = sig
 
   (** restricts some instructions to the root node *)
   val root_perform : (unit -> unit) -> unit
-
+   
   (** initializes the random number generator, and guarantees that each node
-    has a different seed *)
+      has a different seed *)
+  val init_rng : int -> unit
+   
+  (** initializes the random number generator, and guarantees that each node
+      has a different seed *)
   val self_init_rng : unit -> unit
 
   (** perform a computation that involves some random number generation

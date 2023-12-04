@@ -15,11 +15,11 @@ module type T = sig
   val allgather : 'a -> 'a array
 
   (** same as gather, except that each node [k] sends a ['a option array] [xk].
-    The result is seen only at root node, and is a ['a array] [x] such
-    that [x.(i) = aki] iif [xk.(i) = Some aki].
-    In other words, all nodes form a partition of some array and transmit
-    only their share. The partition should be complete.
-    Non-root nodes receive [[| |]] *)
+      The result is seen only at root node, and is a ['a array] [x] such
+      that [x.(i) = aki] iif [xk.(i) = Some aki].
+      In other words, all nodes form a partition of some array and transmit
+      only their share. The partition should be complete.
+      Non-root nodes receive [[| |]] *)
   val gatheroption : 'a option array -> 'a array
 
   (** same as gatheroption, except that the result is given to all nodes *)
@@ -34,11 +34,15 @@ module type T = sig
     -> unit
 
   (* broadcast a value to all the nodes, from root;
-   the argument is not significant at any of the non-root nodes *)
+     the argument is not significant at any of the non-root nodes *)
   val broadcast : 'a -> 'a
 
   (* broadcast the of f () computed by the root node only *)
   val broadcast' : (unit -> 'a) -> 'a
+
+  (* broadcast a value to all the nodes; the root node is supposed to hold (Some x);
+     it is irrelevant what the non-root nodes hold. *)
+  val broadcastoption : 'a option -> 'a
 
   (** [root_receive x src]: the root node receives a value from [src] *)
   val root_receive : 'a -> int -> 'a
@@ -54,18 +58,18 @@ module type T = sig
 
   (** restricts some instructions to the root node *)
   val root_perform : (unit -> unit) -> unit
-   
+
   (** initializes the random number generator, and guarantees that each node
       has a different seed *)
   val init_rng : int -> unit
-   
+
   (** initializes the random number generator, and guarantees that each node
       has a different seed *)
   val self_init_rng : unit -> unit
 
   (** perform a computation that involves some random number generation
-    with the same seed at each node... the result is thus guaranteed
-    to be the same everywhere *)
+      with the same seed at each node... the result is thus guaranteed
+      to be the same everywhere *)
   val with_same_rng : (unit -> 'a) -> 'a
 
   (** print a string on standard output. Only root node should print. *)

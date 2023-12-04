@@ -32,8 +32,8 @@ let vshuffle v =
 
 (** Communication on multiple nodes via the mpi library *)
 module Mpi (R : sig
-  val init_rng : int -> unit
-end) =
+    val init_rng : int -> unit
+  end) =
 struct
   let n_nodes = Mpi.comm_size Mpi.comm_world
   let rank = Mpi.comm_rank Mpi.comm_world
@@ -52,28 +52,6 @@ struct
       assert (Array.fold_left (fun accu z -> accu && Array.length z = n) true allx);
       let allx = trans allx in
       Array.init n (fun i ->
-          let z =
-            Array.fold_left
-              (fun accu z ->
-                match z with
-                | Some x -> Some x
-                | None -> accu)
-              None
-              allx.(i)
-          in
-          match z with
-          | Some x -> x
-          | None -> failwith "bad partitioning in gatheroption"))
-
-
-  let allgather x = Mpi.allgather x Mpi.comm_world
-
-  let allgatheroption x =
-    let allx = allgather x in
-    let n = Array.length x in
-    assert (Array.fold_left (fun accu z -> accu && Array.length z = n) true allx);
-    let allx = trans allx in
-    Array.init n (fun i ->
         let z =
           Array.fold_left
             (fun accu z ->
@@ -85,13 +63,41 @@ struct
         in
         match z with
         | Some x -> x
-        | None -> failwith "bad partitioning in allgatheroption")
+        | None -> failwith "bad partitioning in gatheroption"))
+
+
+  let allgather x = Mpi.allgather x Mpi.comm_world
+
+  let allgatheroption x =
+    let allx = allgather x in
+    let n = Array.length x in
+    assert (Array.fold_left (fun accu z -> accu && Array.length z = n) true allx);
+    let allx = trans allx in
+    Array.init n (fun i ->
+      let z =
+        Array.fold_left
+          (fun accu z ->
+            match z with
+            | Some x -> Some x
+            | None -> accu)
+          None
+          allx.(i)
+      in
+      match z with
+      | Some x -> x
+      | None -> failwith "bad partitioning in allgatheroption")
 
 
   let reduce_sum_int x = Mpi.reduce_int x Mpi.Int_sum 0 Mpi.comm_world
   let reduce_sum_float x = Mpi.reduce_float x Mpi.Float_sum 0 Mpi.comm_world
   let reduce_sum_bigarray x dst = Mpi.reduce_bigarray x dst Mpi.Sum 0 Mpi.comm_world
   let broadcast x = Mpi.broadcast x 0 Mpi.comm_world
+
+  let broadcastoption x =
+    match Mpi.broadcast x 0 Mpi.comm_world with
+    | Some x -> x
+    | None -> failwith "broadcastoption: root node should broadcast (Some x), not None"
+
 
   let broadcast' f =
     let z = if first then Some (f ()) else None in
@@ -102,7 +108,6 @@ struct
 
   let root_receive _ src = Mpi.receive src 0 Mpi.comm_world
   let send_to_root x = Mpi.send x 0 0 Mpi.comm_world
-
   let init_rng = R.init_rng
 
   let self_init_rng () =
@@ -112,10 +117,10 @@ struct
     let seeds =
       if first
       then (
-        (* the trick is to sum-accumulate an array of 
-            random strictly positive ints,
-            so that each element is different from one another. This
-            way, all nodes will have different seeds *)
+        (* the trick is to sum-accumulate an array of
+           random strictly positive ints,
+           so that each element is different from one another. This
+           way, all nodes will have different seeds *)
         let z = Nativeint.sub maxseed 2n in
         let v =
           Array.init n (fun _ -> float (1 + Nativeint.to_int (Random.nativeint z)))
